@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>留學生活動社交系統 — UI Flow</title>
+<style>
+:root {
+  /* Phone interior — clean white/grey base */
+  --white: #FFFFFF;
+  --surface: #F5F5F7;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #EFEFEF;
+
+  /* Yellow — accent only, used sparingly */
+  --yellow: #E8C84A;
+  --yellow-light: #FBF0C0;
+  --yellow-mid: #F2D96A;
+  --yellow-dark: #B8960E;
+
+  /* Supporting colours */
+  --green: #3D9E6A;
+  --green-light: #E6F5EE;
+  --red: #D94F4F;
+  --red-light: #FDEAEA;
+  --blue: #3A7BD5;
+  --blue-light: #EAF0FB;
+
+  /* Text */
+  --text: #1A1A1A;
+  --text-light: #6B7280;
+  --text-muted: #9CA3AF;
+
+  /* Borders & shadows */
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+
+  /* Dark shell */
+  --bg: #1A1A1A;
+  --panel: #242424;
+  --panel-border: #383838;
+  --label: #888;
+
+  --radius: 12px;
+  --font: 'Noto Sans TC', 'PingFang TC', sans-serif;
+
+  /* Legacy aliases so nothing breaks */
+  --cream: var(--white);
+  --cream-dark: var(--surface);
+  --cream-mid: var(--surface-raised);
+  --gray: var(--text-muted);
+  --gray-light: var(--surface-sunken);
+  --gray-mid: #C8CACC;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:var(--bg); min-height:100vh; display:flex; flex-direction:column; }
+
+/* HEADER */
+.phase-legend { display:flex; gap:14px; align-items:center; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:0.7rem; color:var(--label); }
+.legend-dot { width:9px; height:9px; border-radius:50%; }
+
+/* LAYOUT */
+.main-layout { display:flex; flex:1; overflow:hidden; }
+
+/* FLOW PANEL */
+.flow-panel { width:420px; min-width:420px; background:var(--panel); border-right:1px solid var(--panel-border); overflow-y:auto; padding:20px 18px 40px; height: 100vh; }
+.flow-panel h1 {font-size: 1.5rem; color: var(--border); margin: 5px 0 20px; text-align: center;}
+.phase-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.phase-bar { flex:1; height:1px; background:var(--panel-border); }
+.phase-tag { font-size:0.76rem; font-weight:700; letter-spacing:1.5px; padding:2px 10px; border-radius:20px; white-space:nowrap; }
+.phase-tag.p1 { color:#7DC97D; }
+.phase-tag.p2 { color:#7D9DC9; }
+.phase-tag.p3 { color:#C97D7D; }
+.phase-tag.p4 { color:#C9B47D; }
+.phase-tag.p5 { color:#7DC9C0; }
+.phase-tag.shared { color:#AAA; }
+.flow-columns { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+.flow-col-label { font-size:0.82rem; color:#D0D0D0; text-align:center; margin-bottom:6px; }
+.flow-node { background:#333; border:1.5px solid #444; border-radius:8px; padding:8px 10px; cursor:pointer; transition:all 0.15s; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.flow-node:hover { border-color:var(--yellow); background:#3A3820; }
+.flow-node.active { border-color:var(--yellow); background:#3D3410; box-shadow:0 0 0 2px rgba(232,200,74,0.25); }
+.flow-node-title { font-size:1rem; font-weight:700; color:#D0D0D0; margin-bottom:2px; }
+.flow-node-sub { font-size:0.76rem; color:#8e8e8e; line-height:1.4; }
+.flow-node.sys { background:transparent; border: 0; cursor: default;}
+.flow-node.sys .flow-node-title { color:#9DB8D8; margin-right: 10px;}
+.flow-node-full { grid-column:1 / -1; }
+.flow-arrow { text-align:center; color:#D0D0D0; font-size:0.95rem; margin:3px 0; line-height:1; }
+.flow-arrow-label { font-size:0.62rem; color:#666; margin-top:1px; }
+
+/* PHONE PANEL */
+.phone-panel { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:24px 0; overflow-y:auto; height: 100vh;}
+.phone-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.screen-label { font-size:0.7rem; color:var(--label); letter-spacing:1px; text-align:center; }
+.phone { width:360px; height:700px; background:var(--surface); border-radius:36px; box-shadow:0 20px 60px rgba(0,0,0,0.55),0 0 0 1px #3A3A3A; overflow:hidden; position:relative; display:flex; flex-direction:column; border:2px solid #4A4A4A; }
+.screen { display:none; flex-direction:column; height:100%; overflow:hidden; }
+.screen.active { display:flex; }
+
+/* PHONE COMPONENTS */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 15px 9px; background:var(--white); border-bottom:1px solid var(--border); flex-shrink:0; z-index:10; }
+.topbar-title { font-size:0.95rem; font-weight:700; color:var(--text); }
+.topbar-back { font-size:0.8rem; color:var(--blue); cursor:pointer; font-weight:500; }
+.topbar-right { display:flex; align-items:center; gap:7px; }
+.notif-icon { width:28px; height:28px; background:var(--surface); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; position:relative; border:1px solid var(--border); }
+.edit-icon { width:28px; height:28px; background:var(--surface); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; cursor:pointer; border:1px solid var(--border); color:var(--text-light); font-weight:600; letter-spacing:-0.5px; }
+.badge { position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:var(--red); border-radius:50%; border:1.5px solid var(--white); }
+.screen-body { flex:1; overflow-y:auto; padding:12px 13px 76px; background:var(--surface); }
+.bottom-nav { height:56px; background:var(--white); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-around; flex-shrink:0; }
+.bnav-item { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; padding:3px 9px; border-radius:8px; color:var(--text-muted); font-size:0.58rem; transition:color 0.2s; }
+.bnav-item.active { color:var(--yellow-dark); }
+.bnav-icon { font-size:1.1rem; color:inherit; }
+.fab { position:absolute; bottom:70px; right:14px; width:46px; height:46px; border-radius:50%; background:var(--yellow); border:none; cursor:pointer; font-size:1.5rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(232,200,74,0.5); z-index:20; transition:transform 0.15s; font-weight:700; color:var(--text); }
+.fab:hover { transform:scale(1.08); }
+
+/* CARDS */
+.card { background:var(--white); border-radius:var(--radius); padding:12px; margin-bottom:9px; border:1px solid var(--border); box-shadow:var(--shadow); }
+.act-card { background:var(--white); border-radius:var(--radius); padding:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer; transition:box-shadow 0.15s; }
+.act-card:hover { box-shadow:var(--shadow-md); }
+.act-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.act-card-name { font-size:0.88rem; font-weight:700; color:var(--text); }
+.act-card-slots { font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-left:6px; }
+.badge-type { display:inline-block; padding:2px 9px; background:var(--yellow-light); border-radius:20px; font-size:0.62rem; color:var(--yellow-dark); font-weight:700; margin-bottom:5px; border:1px solid #EDD980; }
+.badge-status { display:inline-block; padding:2px 9px; border-radius:20px; font-size:0.62rem; font-weight:600; }
+.badge-status.reviewing { background:#FFF7E0; color:#8A6200; border:1px solid #EDD980; }
+.badge-status.approved { background:var(--green-light); color:#276748; border:1px solid #A3D9BC; }
+.act-card-info { font-size:0.72rem; color:var(--text-muted); line-height:1.6; }
+.act-card-desc { font-size:0.72rem; color:var(--text-light); margin-top:5px; line-height:1.55; border-top:1px solid var(--border); padding-top:6px; }
+
+/* MAP */
+.static-map { width:100%; height:105px; background:linear-gradient(160deg,#D6E8F5 0%,#B8CDE0 55%,#C5D8E8 100%); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; color:#4A6A8A; font-weight:600; margin-bottom:10px; position:relative; letter-spacing:1px; border:1px solid #C0D4E8; }
+.static-map::after { content:'London, UK — Static Maps'; font-size:0.62rem; color:#5A7A9A; position:absolute; bottom:5px; right:8px; opacity:0.8; }
+
+/* BUTTONS */
+.btn { display:block; width:100%; padding:11px; border-radius:10px; font-size:0.86rem; font-weight:700; border:none; cursor:pointer; font-family:var(--font); transition:all 0.15s; text-align:center; }
+.btn:hover { opacity:0.88; transform:translateY(-1px); }
+.btn-primary { background:var(--yellow); color:var(--text); box-shadow:0 2px 10px rgba(232,200,74,0.4); }
+.btn-green { background:var(--green); color:#fff; box-shadow:0 2px 8px rgba(61,158,106,0.3); }
+.btn-outline { background:var(--white); border:1.5px solid var(--border-strong); color:var(--text-light); }
+.btn-danger { background:var(--red-light); color:var(--red); border:1px solid #F5AAAA; }
+.btn-sm { display:inline-block; width:auto; padding:4px 12px; font-size:0.68rem; border-radius:20px; }
+
+/* FORM */
+.form-group { margin-bottom:11px; }
+.form-label { font-size:0.76rem; color:var(--text-light); margin-bottom:4px; display:block; font-weight:600; }
+.form-input,.form-select,.form-textarea { width:100%; padding:8px 11px; border:1.5px solid var(--border); border-radius:8px; background:var(--white); font-size:0.8rem; color:var(--text); font-family:var(--font); outline:none; transition:border-color 0.15s,box-shadow 0.15s; }
+.form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--yellow); box-shadow:0 0 0 3px rgba(232,200,74,0.18); }
+.form-textarea { resize:vertical; min-height:60px; }
+.form-hint { font-size:0.67rem; color:var(--text-muted); margin-top:3px; }
+.autocomplete-tag { font-size:0.64rem; color:var(--green); margin-top:3px; font-weight:600; }
+.divider { height:1px; background:var(--border); margin:11px 0; }
+.section-title { font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1.2px; }
+.tab-row { display:flex; gap:0; background:var(--surface-sunken); border-radius:9px; padding:3px; margin-bottom:11px; border:1px solid var(--border); }
+.tab-item { flex:1; text-align:center; padding:6px 0; border-radius:7px; font-size:0.78rem; cursor:pointer; color:var(--text-muted); transition:all 0.2s; }
+.tab-item.active { background:var(--white); color:var(--text); font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+.search-bar { display:flex; align-items:center; gap:7px; background:var(--white); border-radius:10px; padding:7px 11px; border:1.5px solid var(--border); margin-bottom:8px; box-shadow:var(--shadow); }
+.search-toggle { font-size:0.76rem; background:var(--yellow-light); border:1px solid #EDD980; border-radius:6px; padding:3px 8px; color:var(--yellow-dark); font-weight:700; cursor:pointer; white-space:nowrap; }
+.search-input { flex:1; border:none; outline:none; font-size:0.78rem; color:var(--text); background:transparent; font-family:var(--font); }
+.filter-btn { display:flex; align-items:center; gap:4px; padding:5px 12px; border-radius:20px; border:1.5px solid var(--border-strong); font-size:0.7rem; cursor:pointer; background:var(--white); color:var(--text-light); transition:all 0.2s; font-weight:500; }
+.filter-btn.active { border-color:var(--yellow-dark); background:var(--yellow-light); color:var(--yellow-dark); font-weight:700; }
+
+/* REVIEW */
+.applicant-row { display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--border); }
+.avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:#fff; flex-shrink:0; }
+.applicant-info { flex:1; min-width:0; }
+.applicant-name { font-size:0.82rem; font-weight:700; color:var(--text); }
+.applicant-credit { font-size:0.76rem; color:var(--text-muted); margin-top:1px; }
+.btn-approve { background:var(--green-light); color:#276748; border:1px solid #A3D9BC; }
+.btn-reject { background:var(--red-light); color:var(--red); border:1px solid #F5AAAA; }
+
+/* STATUS BAR */
+.status-fixed { position:absolute; bottom:56px; left:0; right:0; padding:11px 15px; display:flex; align-items:center; justify-content:center; z-index:10; }
+.status-fixed.green { background:var(--green); }
+.status-fixed.gray { background:var(--surface-sunken); border-top:1px solid var(--border); }
+.status-fixed.cream { background:#FFFBEA; border-top:1px solid var(--border); }
+.status-fixed.transparent { background:var(--white); border-top:1px solid var(--border); }
+.status-fixed-text { font-size:0.88rem; font-weight:700; }
+
+/* MODALS */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--white); width:360px; border-radius:20px 20px 0 0; padding:18px 18px 30px; max-height:85vh; overflow-y:auto; box-shadow:0 -8px 40px rgba(0,0,0,0.2); }
+.modal-title { font-size:0.95rem; font-weight:700; color:var(--text); margin-bottom:12px; }
+.modal-warn { font-size:0.74rem; color:var(--red); margin-bottom:12px; line-height:1.6; background:var(--red-light); padding:8px 10px; border-radius:8px; border:1px solid #F5AAAA; }
+
+/* NOTIF */
+.notif-row { display:flex; gap:9px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border); }
+.notif-dot { width:7px; height:7px; border-radius:50%; background:var(--yellow-dark); margin-top:5px; flex-shrink:0; }
+.notif-dot.read { background:var(--border-strong); }
+.notif-text { font-size:0.78rem; color:var(--text); line-height:1.5; }
+.notif-text.read { color:var(--text-muted); }
+.notif-time { font-size:0.62rem; color:var(--text-muted); margin-top:2px; }
+
+/* SURVEY */
+.survey-person { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+.attendance-toggle { display:flex; gap:4px; margin-left:auto; }
+.att-btn { padding:4px 10px; border-radius:20px; font-size:0.68rem; border:1.5px solid var(--border-strong); cursor:pointer; background:var(--white); color:var(--text-muted); font-weight:500; transition:all 0.15s; }
+.att-btn.selected-attend { background:var(--green-light); border-color:var(--green); color:#276748; font-weight:700; }
+.att-btn.selected-absent { background:var(--red-light); border-color:var(--red); color:var(--red); font-weight:700; }
+.stars { display:flex; gap:4px; margin:7px 0; }
+.star { font-size:1.4rem; cursor:pointer; color:var(--border-strong); transition:color 0.1s; }
+.star.filled { color:var(--yellow); }
+.check-row { display:flex; align-items:center; gap:7px; padding:5px 0; }
+.check-row input[type=checkbox] { width:15px; height:15px; accent-color:var(--yellow-dark); }
+.check-label { font-size:0.78rem; color:var(--text); }
+
+/* MATCH */
+.match-card { background:var(--white); border-radius:var(--radius); padding:14px; margin-bottom:9px; border:1px solid var(--border); box-shadow:var(--shadow); }
+.match-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.match-name { font-weight:700; font-size:0.88rem; color:var(--text); }
+.match-sub { font-size:0.67rem; color:var(--text-muted); margin-top:1px; }
+.line-tag { display:inline-flex; align-items:center; gap:4px; background:#06C755; color:#fff; border-radius:20px; padding:4px 10px; font-size:0.7rem; font-weight:700; margin-bottom:8px; }
+
+/* CHAT */
+.messages { flex:1; overflow-y:auto; padding:11px 13px; display:flex; flex-direction:column; gap:6px; background:var(--surface); }
+.msg { max-width:72%; }
+.msg.me { align-self:flex-end; }
+.msg.them { align-self:flex-start; }
+.msg-bubble { padding:8px 11px; border-radius:16px; font-size:0.78rem; line-height:1.5; }
+.msg.me .msg-bubble { background:var(--yellow); color:var(--text); border-bottom-right-radius:4px; box-shadow:0 1px 4px rgba(232,200,74,0.3); }
+.msg.them .msg-bubble { background:var(--white); color:var(--text); border-bottom-left-radius:4px; box-shadow:var(--shadow); border:1px solid var(--border); }
+.msg-time { font-size:0.58rem; color:var(--text-muted); margin-top:3px; text-align:right; }
+.msg.them .msg-time { text-align:left; }
+.chat-input-row { display:flex; gap:6px; align-items:center; padding:9px 12px; border-top:1px solid var(--border); background:var(--white); flex-shrink:0; }
+.chat-input { flex:1; padding:8px 12px; border-radius:20px; border:1.5px solid var(--border); font-size:0.78rem; background:var(--surface); outline:none; font-family:var(--font); }
+.chat-input:focus { border-color:var(--yellow); }
+.chat-send { width:34px; height:34px; border-radius:50%; background:var(--yellow); border:none; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; font-weight:700; }
+
+/* MY ACT TABS */
+.my-act-tab-row { display:flex; gap:0; margin-bottom:11px; border-bottom:2px solid var(--border); }
+.my-act-tab { padding:7px 14px; font-size:0.9rem; color:var(--text-light); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
+.my-act-tab.active { color:var(--yellow-dark); border-bottom-color:var(--yellow-dark); font-weight:700; }
+
+/* DETAIL */
+.info-row { display:flex; justify-content:space-between; align-items:flex-start; font-size:0.78rem; color:var(--text-muted); padding:7px 0; border-bottom:1px solid var(--border); gap:8px; }
+.info-row:last-child { border-bottom:none; }
+.info-row strong { color:var(--text); text-align:right; }
+.host-score { font-size:0.73rem; color:var(--yellow-dark); font-weight:700; background:var(--yellow-light); padding:1px 7px; border-radius:10px; border:1px solid #EDD980; }
+.alert-box { background:#FFFBEA; border:1px solid #EDD980; border-radius:8px; padding:9px 11px; font-size:0.73rem; color:#7A5C00; margin-bottom:10px; line-height:1.5; }
+
+/* PROFILE */
+.profile-hero { background:var(--white); border-radius:var(--radius); padding:20px 14px 16px; text-align:center; margin-bottom:11px; border:1px solid var(--border); box-shadow:var(--shadow); }
+.profile-avatar-lg { width:66px; height:66px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; color:#fff; margin:0 auto 10px; border:3px solid var(--white); box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.profile-name-lg { font-size:1.05rem; font-weight:700; color:var(--text); }
+.profile-sub-lg { font-size:0.72rem; color:var(--text-muted); margin-top:3px; }
+.profile-stats { display:flex; gap:0; margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
+.stat-item { flex:1; text-align:center; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-num { font-size:1.15rem; font-weight:700; color:var(--text); }
+.stat-label { font-size:0.6rem; color:var(--text-muted); margin-top:2px; }
+.credit-bar { height:6px; background:var(--surface-sunken); border-radius:4px; margin-top:6px; overflow:hidden; border:1px solid var(--border); }
+.credit-fill { height:100%; background:var(--green); border-radius:4px; }
+.attendance-record-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
+.attendance-record-row:last-child { border-bottom:none; }
+.ar-name { font-size:0.8rem; color:var(--text); font-weight:600; }
+.ar-date { font-size:0.66rem; color:var(--text-muted); margin-top:1px; }
+.ar-badge { font-size:0.63rem; font-weight:700; padding:2px 9px; border-radius:20px; }
+.ar-badge.attend { background:var(--green-light); color:#276748; border:1px solid #A3D9BC; }
+.ar-badge.absent { background:var(--red-light); color:var(--red); border:1px solid #F5AAAA; }
+
+/* FILTER */
+.filter-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
+.chip { padding:7px 14px; border-radius:20px; font-size:0.76rem; border:1.5px solid var(--border-strong); cursor:pointer; background:var(--white); color:var(--text-light); transition:all 0.15s; font-family:var(--font); }
+.chip.selected { background:var(--yellow); border-color:var(--yellow-dark); color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="main-layout">
+
+<!-- FLOW PANEL -->
+<div class="flow-panel">
+  <h1>留學生活動社交系統 UI Flow</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+    <div class="flow-col-label">主辦方</div>
+    <div class="flow-col-label">參與方</div>
+  </div>
+
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag p1">階段一：活動建立與探索</div><div class="phase-bar"></div></div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('create')" id="fn-create">
+      <div class="flow-node-title">創建活動</div>
+    </div>
+    <div class="flow-node" onclick="go('explore')" id="fn-explore">
+      <div class="flow-node-title">探索活動</div>
+    </div>
+  </div>
+  <div class="flow-columns">
+    <div class="flow-arrow">↓<div class="flow-arrow-label"> </div></div>
+    <div class="flow-arrow">↓<div class="flow-arrow-label"> </div></div>
+  </div>
+  <div class="flow-columns">
+    <div class="flow-node flow-node-full" onclick="go('detail')" id="fn-detail">
+      <div class="flow-node-title">活動詳情頁</div>
+    </div>
+  </div>
+
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag p2">階段二：報名與審核</div><div class="phase-bar"></div></div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('review')" id="fn-review">
+      <div class="flow-node-title">報名審核</div>
+      <div class="flow-node-sub"> 在「待審核申請」列表批准或拒絕</div>
+    </div>
+    <div class="flow-node" onclick="go('detail')">
+      <div class="flow-node-title">提交報名</div>
+      <div class="flow-node-sub"> 按下下方「報名活動」按鈕</div>
+    </div>
+  </div>
+  <div class="flow-columns">
+    <div class="flow-arrow">↓</div>
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag p3">階段三：異動管理與成團確認</div><div class="phase-bar"></div></div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('review')">
+      <div class="flow-node-title">手動取消活動</div>
+      <div class="flow-node-sub"> 於「報名審核」頁最下方按「取消活動」按鈕</div>
+    </div>
+    <div class="flow-node" onclick="go('myact')">
+      <div class="flow-node-title">取消報名</div>
+      <div class="flow-node-sub"> 在「我報名的」頁籤下，按「取消報名」按鈕</div>
+    </div>
+  </div>
+  <div class="flow-node sys" style="margin:6px 0;">
+    <div class="flow-node-title">活動前一晚 12 點系統檢查</div>
+    <div class="flow-node-sub">已批准人數 ≥ 3 → 確認舉辦 <br/>少於 3 → 自動取消，通知主辦方與所有已報名者</div>
+  </div>
+  <div class="flow-node sys" style="margin:6px 0;">
+    <div class="flow-node-title">活動前 1 小時</div>
+    <div class="flow-node-sub">發送行前提醒給主辦方與所有已報名者</div>
+  </div>
+
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag p4">階段四：出席與評價</div><div class="phase-bar"></div></div>
+  <div class="flow-node sys" style="margin:6px 0;">
+    <div class="flow-node-title">活動後 3 小時</div>
+    <div class="flow-node-sub">開放問卷入口，發送填寫提醒給所有與會者，問卷開放至活動後 51 小時</div>
+  </div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('survey2')" id="fn-survey2">
+      <div class="flow-node-title">問卷（主辦方）</div>
+      <div class="flow-node-sub">無 主辦人好感度評分</div>
+    </div>
+    <div class="flow-node" onclick="go('survey')" id="fn-survey">
+      <div class="flow-node-title">問卷（參與方）</div>
+      <div class="flow-node-sub">有 主辦人好感度評分</div>
+    </div>
+  </div>
+
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag p5">第五階段：配對與後續互動</div><div class="phase-bar"></div></div>
+  <div class="flow-node sys" style="margin:6px 0;">
+    <div class="flow-node-title">配對邏輯</div>
+    <div class="flow-node-sub">互相勾選聯繫意願 → 建立配對紀錄→ 建立聊天渠道 → 通知雙方</div>
+  </div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('match')" id="fn-match">
+      <div class="flow-node-title">配對列表</div>
+    </div>
+    <div class="flow-node" onclick="go('chat')" id="fn-chat">
+      <div class="flow-node-title">即時聊天</div>
+    </div>
+  </div>
+
+  <div class="phase-header"><div class="phase-bar"></div><div class="phase-tag shared">共用功能</div><div class="phase-bar"></div></div>
+  <div class="flow-columns">
+    <div class="flow-node" onclick="go('notif')" id="fn-notif">
+      <div class="flow-node-title">通知中心</div>
+    </div>
+    <div class="flow-node" onclick="go('myact')" id="fn-myact">
+      <div class="flow-node-title">我的活動</div>
+    </div>
+  </div>
+  <div class="flow-columns" style="margin-top:8px;">
+    <div class="flow-node flow-node-full" onclick="go('profile')" id="fn-profile">
+      <div class="flow-node-title">個人檔案</div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE PANEL -->
+<div class="phone-panel">
+<div class="phone-wrap">
+  <div class="screen-label" id="screen-label">探索活動</div>
+  <div class="phone">
+
+    <!-- EXPLORE -->
+    <div class="screen active" id="screen-explore">
+      <div class="topbar">
+        <span class="topbar-title">探索活動</span>
+        <div class="topbar-right">
+          <div class="notif-icon" onclick="go('notif')">🔔<span class="badge"></span></div>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="static-map">MAP</div>
+        <div class="search-bar">
+          <button class="search-toggle" id="search-mode-btn" onclick="toggleMode()">活動名稱</button>
+          <input class="search-input" id="search-inp" placeholder="搜尋活動名稱…">
+          <span style="color:var(--gray);font-size:0.8rem;font-weight:700;">S</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+          <div class="tab-row" style="margin-bottom:0;flex:1;margin-right:7px;">
+            <div class="tab-item active" onclick="setTab(this)">附近</div>
+            <div class="tab-item" onclick="setTab(this)">最近</div>
+          </div>
+          <div class="filter-btn" id="filter-toggle-btn" onclick="openModal('modal-filter')">篩選</div>
+        </div>
+        <div id="explore-list">
+          <div class="act-card" onclick="go('detail')" data-type="咖啡／聊天">
+            <div class="act-card-top"><div class="act-card-name">Weekend Café Catch-up</div><div class="act-card-slots">3/6 人</div></div>
+            <span class="badge-type">咖啡／聊天</span>
+            <div class="act-card-info">Covent Garden · 週六 10:00</div>
+            <div class="act-card-desc">在倫敦市中心的獨立咖啡館相聚，邊喝咖啡邊聊留學生活，不管是課業、找工作還是週末去哪玩，什麼都可以聊。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="攝影">
+            <div class="act-card-top"><div class="act-card-name">Photography Walk – South Bank</div><div class="act-card-slots">4/5 人</div></div>
+            <span class="badge-type">攝影</span>
+            <div class="act-card-info">South Bank · 週六 13:00</div>
+            <div class="act-card-desc">沿著泰晤士河南岸漫步拍照，從千禧橋走到塔橋，捕捉倫敦最經典的天際線與街頭人文風景。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="語言交換">
+            <div class="act-card-top"><div class="act-card-name">Language Exchange Lunch</div><div class="act-card-slots">3/4 人</div></div>
+            <span class="badge-type">語言交換</span>
+            <div class="act-card-info">Soho · 週日 12:30</div>
+            <div class="act-card-desc">半中半英的語言交換午餐，找一間有意思的小餐廳，每隔 15 分鐘切換語言，輕鬆又有趣，不需要老師，只需要開口。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="戶外健行">
+            <div class="act-card-top"><div class="act-card-name">Hampstead Heath Morning Walk</div><div class="act-card-slots">2/6 人</div></div>
+            <span class="badge-type">戶外健行</span>
+            <div class="act-card-info">Hampstead · 週日 09:00</div>
+            <div class="act-card-desc">一起去 Hampstead Heath 走走，天氣好的話可以爬上 Parliament Hill 俯瞰整個倫敦市區，走完再去附近的烘培店吃早餐。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="桌遊">
+            <div class="act-card-top"><div class="act-card-name">Board Games Evening</div><div class="act-card-slots">4/6 人</div></div>
+            <span class="badge-type">桌遊</span>
+            <div class="act-card-info">Shoreditch · 週五 18:30</div>
+            <div class="act-card-desc">在 Shoreditch 的桌遊咖啡館包場，從 Catan 到 Codenames 都有，適合認識新朋友，不需要有桌遊經驗，現場可以學。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="美食探店">
+            <div class="act-card-top"><div class="act-card-name">Borough Market Food Tour</div><div class="act-card-slots">5/6 人</div></div>
+            <span class="badge-type">美食探店</span>
+            <div class="act-card-info">London Bridge · 週六 11:00</div>
+            <div class="act-card-desc">走訪 Borough Market，一起試吃各種英式與歐陸食品，從 Neal's Yard 起司到 Monmouth 咖啡，邊走邊吃邊聊，結束後可以選一間餐廳坐下來好好吃頓午餐。</div>
+          </div>
+          <div class="act-card" onclick="go('detail')" data-type="運動">
+            <div class="act-card-top"><div class="act-card-name">Hyde Park Badminton</div><div class="act-card-slots">3/6 人</div></div>
+            <span class="badge-type">運動</span>
+            <div class="act-card-info">Hyde Park · 週一 17:00</div>
+            <div class="act-card-desc">在 Hyde Park 找塊草地打羽毛球，球拍和球都帶好了，各種程度都歡迎，重點是動一動、認識新朋友。</div>
+          </div>
+        </div>
+        <div id="explore-empty" style="display:none;" class="card">
+          <div style="text-align:center;padding:20px 0;">
+            <div style="font-size:0.85rem;color:var(--gray);margin-bottom:11px;">目前沒有活動....要主動發起活動嗎？</div>
+            <button class="btn btn-primary" onclick="go('create')">辦活動</button>
+          </div>
+        </div>
+      </div>
+      <button class="fab" onclick="go('create')">+</button>
+      <div class="bottom-nav">
+        <div class="bnav-item active"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div class="screen" id="screen-create">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('explore')">← 返回</span>
+        <span class="topbar-title">創建活動</span><span></span>
+      </div>
+      <div class="screen-body">
+        <div class="form-group"><label class="form-label">活動名稱 *</label><input class="form-input" placeholder="為你的活動取個名字…"></div>
+        <div class="form-group">
+          <label class="form-label">活動類型 *</label>
+          <select class="form-select">
+            <option value="">請選擇活動類型</option>
+            <option>咖啡／聊天</option><option>語言交換</option><option>攝影</option>
+            <option>戶外健行</option><option>美食探店</option><option>運動</option>
+            <option>觀光</option><option>桌遊</option>
+          </select>
+          <div class="form-hint">從固定清單擇一，不支援自由輸入</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">活動地點 *</label>
+          <input class="form-input" value="Monmouth Coffee, Covent Garden, London">
+          <div class="autocomplete-tag">Google Places Autocomplete</div>
+        </div>
+        <div style="display:flex;gap:9px;">
+          <div class="form-group" style="flex:1;"><label class="form-label">日期 *</label><input class="form-input" type="date" value="2025-06-07"></div>
+          <div class="form-group" style="flex:1;"><label class="form-label">時間 *</label><input class="form-input" type="time" value="10:00"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">人數上限（3–6 人）*</label>
+          <input class="form-input" type="number" min="3" max="6" value="5">
+          <div class="form-hint">最少 3 人、最多 6 人</div>
+        </div>
+        <div class="form-group"><label class="form-label">活動說明</label><textarea class="form-textarea" placeholder="告訴大家這個活動的風格、地點特色、適合什麼樣的人…"></textarea></div>
+        <button class="btn btn-primary" onclick="go('explore')">發布活動</button>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="screen" id="screen-detail">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('explore')">← 探索</span>
+        <span class="topbar-title">活動詳情</span>
+        <div class="notif-icon" onclick="go('notif')">🔔<span class="badge"></span></div>
+      </div>
+      <div class="screen-body" style="padding-bottom:105px;">
+        <div class="static-map">MAP</div>
+        <div class="card">
+          <div style="font-size:0.97rem;font-weight:700;color:var(--text);margin-bottom:4px;">Weekend Café Catch-up</div>
+          <span class="badge-type">咖啡／聊天</span>
+          <div class="divider"></div>
+          <div class="info-row"><span>地點</span><strong>Monmouth Coffee, Covent Garden</strong></div>
+          <div class="info-row"><span>時間</span><strong>2025/06/07 週六 10:00</strong></div>
+          <div class="info-row"><span>人數</span><strong>3 / 5 人（剩 2 名額）</strong></div>
+          <div class="info-row"><span>主辦人</span><strong>Wei-Ting Chen &nbsp;<span class="host-score">4.7 分</span></strong></div>
+        </div>
+        <div class="card">
+          <div class="section-title">活動說明</div>
+          <p style="font-size:0.78rem;color:var(--text-light);line-height:1.7;">在倫敦市中心的獨立咖啡館相聚，邊喝咖啡邊聊留學生活。不管是課業壓力、找實習的困境，還是週末想去哪裡探索，什麼都可以聊。Monmouth 的濾掛咖啡非常值得一試，建議提早 10 分鐘到，地點在 Covent Garden 捷運站步行 5 分鐘。</p>
+        </div>
+        <div class="section-title">底部狀態切換（示意）</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="setStatus('reg')">可報名</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('rev')">審核中</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('ok')">已報名</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('cancel')">已取消</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('confirm')">確認舉辦</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('host')">主辦視角</button>
+          <button class="btn btn-outline btn-sm" onclick="setStatus('full')">已額滿</button>
+        </div>
+      </div>
+      <div id="detail-bottom" class="status-fixed transparent">
+        <button class="btn btn-primary" style="margin:0;" onclick="openModal('modal-reg')">報名活動</button>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="screen" id="screen-review">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('myact')">← 返回</span>
+        <span class="topbar-title">報名審核</span><span></span>
+      </div>
+      <div class="screen-body">
+        <div class="card" style="margin-bottom:9px;">
+          <div style="font-size:0.88rem;font-weight:700;color:var(--text);">Weekend Café Catch-up</div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:2px;">Covent Garden · 2025/06/07 10:00 · 3/5 人</div>
+        </div>
+        <div style="display:flex;gap:7px;margin-bottom:11px;">
+          <div class="card" style="flex:1;text-align:center;margin:0;padding:8px;"><div style="font-size:1.15rem;font-weight:700;color:var(--yellow-dark);">3</div><div style="font-size:0.63rem;color:var(--gray);">待審核</div></div>
+          <div class="card" style="flex:1;text-align:center;margin:0;padding:8px;"><div style="font-size:1.15rem;font-weight:700;color:var(--green);">3</div><div style="font-size:0.63rem;color:var(--gray);">已批准</div></div>
+          <div class="card" style="flex:1;text-align:center;margin:0;padding:8px;"><div style="font-size:1.15rem;font-weight:700;color:var(--red);">1</div><div style="font-size:0.63rem;color:var(--gray);">已拒絕</div></div>
+        </div>
+        <div class="section-title">待審核申請</div>
+        <div class="applicant-row" id="row-HK">
+          <div class="avatar" style="background:#5BAF8D;">HK</div>
+          <div class="applicant-info"><div class="applicant-name">Hana Kim</div><div class="applicant-credit">出席率 100% · 8 次參與 · 0 次缺席</div></div>
+          <div style="display:flex;gap:4px;"><button class="btn btn-sm btn-approve" onclick="approveRow('HK')">批准</button><button class="btn btn-sm btn-reject" onclick="rejectRow('HK')">拒絕</button></div>
+        </div>
+        <div class="applicant-row" id="row-OB">
+          <div class="avatar" style="background:#8D5BAF;">OB</div>
+          <div class="applicant-info"><div class="applicant-name">Oscar Benali</div><div class="applicant-credit">出席率 80% · 5 次參與 · 1 次缺席</div></div>
+          <div style="display:flex;gap:4px;"><button class="btn btn-sm btn-approve" onclick="approveRow('OB')">批准</button><button class="btn btn-sm btn-reject" onclick="rejectRow('OB')">拒絕</button></div>
+        </div>
+        <div class="applicant-row" id="row-MS">
+          <div class="avatar" style="background:#AF8D5B;">MS</div>
+          <div class="applicant-info"><div class="applicant-name">Mei-Shan Lin</div><div class="applicant-credit">出席率 67% · 3 次參與 · 1 次缺席</div></div>
+          <div style="display:flex;gap:4px;"><button class="btn btn-sm btn-approve" onclick="approveRow('MS')">批准</button><button class="btn btn-sm btn-reject" onclick="rejectRow('MS')">拒絕</button></div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">已批准</div>
+        <div class="applicant-row">
+          <div class="avatar" style="background:#5B8DD9;">AL</div>
+          <div class="applicant-info"><div class="applicant-name">Aiko Lim</div><div class="applicant-credit">出席率 100% · 12 次參與</div></div>
+          <span class="badge-status approved">已批准</span>
+        </div>
+        <div class="applicant-row">
+          <div class="avatar" style="background:#C95BBB;">SO</div>
+          <div class="applicant-info"><div class="applicant-name">Sofia Okonkwo</div><div class="applicant-credit">出席率 90% · 10 次參與</div></div>
+          <span class="badge-status approved">已批准</span>
+        </div>
+        <div class="applicant-row">
+          <div class="avatar" style="background:#C9855B;">TP</div>
+          <div class="applicant-info"><div class="applicant-name">Tariq Patel</div><div class="applicant-credit">出席率 83% · 6 次參與 · 1 次缺席</div></div>
+          <span class="badge-status approved">已批准</span>
+        </div>
+        <div style="margin-top:13px;"><button class="btn btn-danger" onclick="openModal('modal-cancel')">取消活動</button></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item active" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- MY ACTIVITIES -->
+    <div class="screen" id="screen-myact">
+      <div class="topbar">
+        <span class="topbar-title">我的活動</span>
+        <div class="notif-icon" onclick="go('notif')">🔔<span class="badge"></span></div>
+      </div>
+      <div class="screen-body">
+        <div class="my-act-tab-row">
+          <div class="my-act-tab active" onclick="switchMyTab(this,'host')">我舉辦的</div>
+          <div class="my-act-tab" onclick="switchMyTab(this,'joined')">我報名的</div>
+        </div>
+        <div id="host-tab">
+          <div class="act-card" onclick="go('review')">
+            <div class="act-card-top"><div class="act-card-name">Weekend Café Catch-up</div><span class="badge-status" style="background:#E8F0FF;color:#3A5AA0;font-size:0.62rem;">發布中</span></div>
+            <span class="badge-type">咖啡／聊天</span>
+            <div class="act-card-info">Covent Garden · 2025/06/07 10:00 · 3/5 人</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm" style="background:var(--cream-dark);border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;">審核報名（3 待審）</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">East End Street Art Walk</div><span class="badge-status approved" style="font-size:0.62rem;">確認舉辦</span></div>
+            <span class="badge-type">觀光</span>
+            <div class="act-card-info">Shoreditch · 2025/06/14 Sat 14:00 · 4/5 人</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm btn-approve" onclick="go('survey')" style="font-size:0.68rem;">填寫問卷</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Sunday Pub Quiz Night</div><span class="badge-status" style="background:#E8F0FF;color:#3A5AA0;font-size:0.62rem;">發布中</span></div>
+            <span class="badge-type">咖啡／聊天</span>
+            <div class="act-card-info">Islington · 2025/06/22 Sun 19:30 · 4/6 人</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm" style="background:var(--cream-dark);border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;">審核報名（2 待審）</button></div>
+          </div>
+        </div>
+        <div id="joined-tab" style="display:none;">
+          <div class="section-title">進行中</div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Photography Walk – South Bank</div><span class="badge-status approved">已報名</span></div>
+            <span class="badge-type">攝影</span>
+            <div class="act-card-info">South Bank · 2025/06/14 Sat 13:00</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm btn-reject" onclick="openModal('modal-cancel-reg')" style="font-size:0.68rem;">取消報名</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Hyde Park Badminton</div><span class="badge-status approved">已報名</span></div>
+            <span class="badge-type">運動</span>
+            <div class="act-card-info">Hyde Park · 2025/06/16 Mon 17:00</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm btn-reject" onclick="openModal('modal-cancel-reg')" style="font-size:0.68rem;">取消報名</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Afternoon Tea Experience</div><span class="badge-status reviewing">主辦審核中</span></div>
+            <span class="badge-type">美食探店</span>
+            <div class="act-card-info">Mayfair · 2025/06/21 Sat 15:30</div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Thames Path Riverside Walk</div><span class="badge-status reviewing">主辦審核中</span></div>
+            <span class="badge-type">戶外健行</span>
+            <div class="act-card-info">Richmond · 2025/06/22 Sun 10:00</div>
+          </div>
+          <div class="section-title" style="margin-top:11px;">已結束</div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Board Games Evening</div><span style="font-size:0.63rem;color:var(--gray);">已結束</span></div>
+            <span class="badge-type">桌遊</span>
+            <div class="act-card-info">Shoreditch · 2025/04/28 · 6 人出席</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm" style="background:var(--cream-dark);border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;" onclick="go('survey')">填寫問卷</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Hampstead Heath Morning Walk</div><span style="font-size:0.63rem;color:var(--gray);">已結束</span></div>
+            <span class="badge-type">戶外健行</span>
+            <div class="act-card-info">Hampstead · 2025/04/06 · 5 人出席</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm" style="background:var(--green-light);border:1px solid var(--green);color:#2E7D5A;font-size:0.68rem;">已填寫問卷</button></div>
+          </div>
+          <div class="act-card">
+            <div class="act-card-top"><div class="act-card-name">Language Exchange Lunch</div><span style="font-size:0.63rem;color:var(--gray);">已結束</span></div>
+            <span class="badge-type">語言交換</span>
+            <div class="act-card-info">Soho · 2025/03/15 · 4 人出席</div>
+            <div style="margin-top:7px;"><button class="btn btn-sm" style="background:var(--green-light);border:1px solid var(--green);color:#2E7D5A;font-size:0.68rem;">已填寫問卷</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item active"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- SURVEY -->
+    <div class="screen" id="screen-survey">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('myact')">← 返回</span>
+        <span class="topbar-title">活動後問卷</span><span></span>
+      </div>
+      <div class="screen-body">
+        <div class="alert-box">East End Street Art Walk · 問卷開放至明天 17:00（活動後 3–51 小時）</div>
+        <div class="card">
+          <div class="section-title">主辦人好感度評分</div>
+          <div style="font-size:0.83rem;font-weight:700;color:var(--text);">Wei-Ting Chen</div>
+          <div style="font-size:0.68rem;color:var(--text-light);margin-top:2px;">1 = 非常差　5 = 非常好</div>
+          <div class="stars" id="star-row">
+            <span class="star filled" onclick="setStar(1)">★</span>
+            <span class="star filled" onclick="setStar(2)">★</span>
+            <span class="star filled" onclick="setStar(3)">★</span>
+            <span class="star filled" onclick="setStar(4)">★</span>
+            <span class="star" onclick="setStar(5)">★</span>
+          </div>
+          <div class="form-hint">主辦方問卷無此欄位</div>
+        </div>
+        <div class="card">
+          <div class="section-title">出席狀況評價</div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#5B8DD9;">AL</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Aiko Lim</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#C95BBB;">SO</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Sofia Okonkwo</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#C9855B;">TP</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Tariq Patel</div>
+            <div class="attendance-toggle">
+              <button class="att-btn" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn selected-absent" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#5BAF8D;">HK</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Hana Kim</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#8D5BAF;">OB</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Oscar Benali</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">後續聯繫意願</div>
+          <div class="check-row"><input type="checkbox" id="c1" checked><label class="check-label" for="c1">Aiko Lim</label></div>
+          <div class="check-row"><input type="checkbox" id="c2"><label class="check-label" for="c2">Sofia Okonkwo</label></div>
+          <div class="check-row"><input type="checkbox" id="c3"><label class="check-label" for="c3">Tariq Patel</label></div>
+          <div class="check-row"><input type="checkbox" id="c4" checked><label class="check-label" for="c4">Hana Kim</label></div>
+          <div class="check-row"><input type="checkbox" id="c5"><label class="check-label" for="c5">Oscar Benali</label></div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-survey-ok')">送出問卷</button>
+      </div>
+    </div>
+
+    <!-- SURVEY2 -->
+    <div class="screen" id="screen-survey2">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('myact')">← 返回</span>
+        <span class="topbar-title">活動後問卷</span><span></span>
+      </div>
+      <div class="screen-body">
+        <div class="alert-box">East End Street Art Walk · 問卷開放至明天 17:00（活動後 3–51 小時）</div>
+        <div class="card">
+          <div class="section-title">出席狀況評價</div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#5B8DD9;">AL</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Aiko Lim</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#C95BBB;">SO</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Sofia Okonkwo</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#C9855B;">TP</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Tariq Patel</div>
+            <div class="attendance-toggle">
+              <button class="att-btn" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn selected-absent" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#5BAF8D;">HK</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Hana Kim</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+          <div class="survey-person">
+            <div class="avatar" style="background:#8D5BAF;">OB</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text);flex:1;">Oscar Benali</div>
+            <div class="attendance-toggle">
+              <button class="att-btn selected-attend" onclick="pickAtt(this,'attend')">出席</button>
+              <button class="att-btn" onclick="pickAtt(this,'absent')">未出席</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">後續聯繫意願</div>
+          <div class="check-row"><input type="checkbox" id="c1" checked><label class="check-label" for="c1">Aiko Lim</label></div>
+          <div class="check-row"><input type="checkbox" id="c2"><label class="check-label" for="c2">Sofia Okonkwo</label></div>
+          <div class="check-row"><input type="checkbox" id="c3"><label class="check-label" for="c3">Tariq Patel</label></div>
+          <div class="check-row"><input type="checkbox" id="c4" checked><label class="check-label" for="c4">Hana Kim</label></div>
+          <div class="check-row"><input type="checkbox" id="c5"><label class="check-label" for="c5">Oscar Benali</label></div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-survey-ok')">送出問卷</button>
+      </div>
+    </div>
+
+    <!-- MATCH -->
+    <div class="screen" id="screen-match">
+      <div class="topbar">
+        <span class="topbar-title">配對 / 聊天</span>
+        <div class="notif-icon" onclick="go('notif')">🔔<span class="badge"></span></div>
+      </div>
+      <div class="screen-body">
+        <div class="section-title">配對成功</div>
+        <div class="match-card">
+          <div class="match-top">
+            <div class="avatar" style="background:#5B8DD9;">AL</div>
+            <div><div class="match-name">Aiko Lim</div><div class="match-sub">Language Exchange Lunch · 05/25 配對</div></div>
+          </div>
+          <div><span class="line-tag">LINE @aiko_london</span></div>
+          <button class="btn btn-green btn-sm" onclick="go('chat')" style="display:block;text-align:center;margin-top:5px;">開啟私訊</button>
+        </div>
+        <div class="match-card">
+          <div class="match-top">
+            <div class="avatar" style="background:#5BAF8D;">HK</div>
+            <div><div class="match-name">Hana Kim</div><div class="match-sub">Board Games Evening · 04/28 配對</div></div>
+          </div>
+          <div><span class="line-tag">LINE @hana_uk</span></div>
+          <button class="btn btn-green btn-sm" onclick="go('chat')" style="display:block;text-align:center;margin-top:5px;">開啟私訊</button>
+        </div>
+        <div class="match-card">
+          <div class="match-top">
+            <div class="avatar" style="background:#C9855B;">TP</div>
+            <div><div class="match-name">Tariq Patel</div><div class="match-sub">Photography Walk · 05/10 配對</div></div>
+          </div>
+          <div><span class="line-tag">LINE @tariq_ldn</span></div>
+          <button class="btn btn-green btn-sm" onclick="go('chat')" style="display:block;text-align:center;margin-top:5px;">開啟私訊</button>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item active"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="screen" id="screen-chat">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('match')">← 配對</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="avatar" style="background:#5B8DD9;width:24px;height:24px;font-size:0.62rem;">AL</div>
+          <span class="topbar-title">Aiko Lim</span>
+        </div>
+        <span></span>
+      </div>
+      <div class="messages" id="chat-msgs">
+        <div class="msg them"><div class="msg-bubble">Really enjoyed the language exchange lunch, thanks for organizing!</div><div class="msg-time">13:22</div></div>
+        <div class="msg me"><div class="msg-bubble">Me too! Your Japanese really helped. Are you joining the South Bank walk?</div><div class="msg-time">13:24</div></div>
+        <div class="msg them"><div class="msg-bubble">Yes! Already signed up. Hope the weather holds — British weather is so unpredictable.</div><div class="msg-time">13:25</div></div>
+        <div class="msg me"><div class="msg-bubble">Ha, true. We should grab a pint at the Anchor afterwards if it's sunny.</div><div class="msg-time">13:27</div></div>
+        <div class="msg them"><div class="msg-bubble">Sounds like a plan. See you Saturday!</div><div class="msg-time">13:28</div></div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-inp" placeholder="輸入訊息…" onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="chat-send" onclick="sendMsg()">→</button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="screen" id="screen-notif">
+      <div class="topbar">
+        <span class="topbar-back" onclick="go('explore')">← 返回</span>
+        <span class="topbar-title">通知中心</span>
+        <span style="font-size:0.7rem;color:var(--yellow-dark);cursor:pointer;">全部已讀</span>
+      </div>
+      <div class="screen-body">
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">您與 Aiko Lim 配對成功，快去查看對方聯繫方式</div><div class="notif-time">剛剛</div></div></div>
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">Hana Kim 提交了 Weekend Café Catch-up 的報名申請</div><div class="notif-time">10 分鐘前</div></div></div>
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">Oscar Benali 提交了 Weekend Café Catch-up 的報名申請</div><div class="notif-time">32 分鐘前</div></div></div>
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">Mei-Shan Lin 提交了 Weekend Café Catch-up 的報名申請</div><div class="notif-time">1 小時前</div></div></div>
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">East End Street Art Walk 已確認舉辦，共 4 位出席者，請準時在 Shoreditch High Street 站集合</div><div class="notif-time">2 小時前</div></div></div>
+        <div class="notif-row"><div class="notif-dot"></div><div><div class="notif-text">提醒：Weekend Café Catch-up 將於 1 小時後開始，請準時前往 Monmouth Coffee</div><div class="notif-time">昨天 09:00</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">您與 Hana Kim 配對成功，快去查看對方聯繫方式</div><div class="notif-time">2 天前</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">您報名的 Afternoon Tea Experience 未通過審核，別灰心，繼續探索下一個有趣活動</div><div class="notif-time">2 天前</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">請填寫 Board Games Evening 的活動後問卷，開放至明天 21:00</div><div class="notif-time">3 天前</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">Aiko Lim 傳送了一則新訊息</div><div class="notif-time">3 天前</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">Hyde Park Badminton 已確認舉辦，共 5 位出席者，請準時到達 Hyde Park 東門入口</div><div class="notif-time">4 天前</div></div></div>
+        <div class="notif-row"><div class="notif-dot read"></div><div><div class="notif-text read">Borough Market Food Tour 已取消，原因：Organiser feeling unwell, will reschedule soon</div><div class="notif-time">5 天前</div></div></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item" onclick="go('profile')"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="screen-profile">
+      <div class="topbar">
+        <span class="topbar-title">個人檔案</span>
+        <div class="edit-icon" onclick="openModal('modal-edit-profile')">✏️</div>
+      </div>
+      <div class="screen-body">
+        <div class="profile-hero">
+          <div class="profile-avatar-lg" style="background:linear-gradient(135deg,#5B8DD9,#7DC5F0);">YK</div>
+          <div class="profile-name-lg">Yuki Chen</div>
+          <div class="profile-sub-lg">現居 London, UK · 來自 Japan</div>
+          <div style="margin-top:7px;"><span class="line-tag" style="margin-bottom:0;">LINE @yuki_london</span></div>
+          <div class="profile-stats">
+            <div class="stat-item"><div class="stat-num">15</div><div class="stat-label">參與次數</div></div>
+            <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">舉辦活動</div></div>
+            <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">配對成功</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">信用評分</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:0.83rem;color:var(--text);font-weight:700;">出席率</span>
+            <span style="font-size:0.97rem;font-weight:700;color:var(--green);">93%</span>
+          </div>
+          <div class="credit-bar"><div class="credit-fill" style="width:93%;"></div></div>
+          <div style="font-size:0.7rem;color:var(--text-light);margin-top:5px;">14 / 15 次準時出席</div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:0.8rem;color:var(--text-light);">未出席紀錄</span>
+            <span style="font-size:0.8rem;font-weight:700;color:var(--red);">1 次</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">出席紀錄</div>
+          <div class="attendance-record-row"><div><div class="ar-name">East End Street Art Walk</div><div class="ar-date">2025/06/14 · Shoreditch</div></div><span class="ar-badge attend">出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Language Exchange Lunch</div><div class="ar-date">2025/05/25 · Soho</div></div><span class="ar-badge attend">出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Hampstead Heath Morning Walk</div><div class="ar-date">2025/04/06 · Hampstead</div></div><span class="ar-badge attend">出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Board Games Evening</div><div class="ar-date">2025/04/28 · Shoreditch</div></div><span class="ar-badge attend">出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Photography Walk – South Bank</div><div class="ar-date">2025/03/22 · South Bank</div></div><span class="ar-badge absent">未出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Hyde Park Badminton</div><div class="ar-date">2025/03/10 · Hyde Park</div></div><span class="ar-badge attend">出席</span></div>
+          <div class="attendance-record-row"><div><div class="ar-name">Weekend Café Catch-up</div><div class="ar-date">2025/02/15 · Covent Garden</div></div><span class="ar-badge attend">出席</span></div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="bnav-item" onclick="go('explore')"><div class="bnav-icon">🔍</div>探索</div>
+        <div class="bnav-item" onclick="go('myact')"><div class="bnav-icon">📁</div>我的活動</div>
+        <div class="bnav-item" onclick="go('match')"><div class="bnav-icon">💚</div>配對</div>
+        <div class="bnav-item active"><div class="bnav-icon">👤</div>我的</div>
+      </div>
+    </div>
+
+  </div><!-- /phone -->
+</div>
+</div><!-- /phone-panel -->
+</div><!-- /main-layout -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-reg">
+  <div class="modal">
+    <div class="modal-title">報名活動</div>
+    <p style="font-size:0.78rem;color:var(--text-light);margin-bottom:13px;line-height:1.7;">確認報名「Weekend Café Catch-up」嗎？提交後進入主辦方審核流程。</p>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-reg')">取消</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="confirmReg()">確認報名</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-cancel">
+  <div class="modal">
+    <div class="modal-title">確定取消活動？</div>
+    <div class="modal-warn">此步驟不可逆，取消原因將通知所有已報名參與者。</div>
+    <div class="form-group"><label class="form-label">取消原因（必填）</label><textarea class="form-textarea" id="cancel-reason" placeholder="請填寫取消原因…" rows="3"></textarea></div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-cancel')">保留活動</button>
+      <button class="btn btn-danger" style="flex:1;" onclick="confirmCancel()">確定取消</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-cancel-reg">
+  <div class="modal">
+    <div class="modal-title">確定取消報名？</div>
+    <div class="modal-warn">確定取消報名「Photography Walk – South Bank」嗎？此步驟不可逆。</div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-cancel-reg')">保留報名</button>
+      <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal-cancel-reg')">確定取消</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-survey-ok">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:8px;">問卷已送出</div>
+    <p style="font-size:0.78rem;color:var(--text-light);margin-bottom:13px;">感謝你的回饋，配對結果將在問卷截止後通知你。</p>
+    <button class="btn btn-primary" onclick="closeModal('modal-survey-ok');go('myact');">回到我的活動</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-edit-profile">
+  <div class="modal">
+    <div class="modal-title">編輯個人資料</div>
+    <div class="form-group"><label class="form-label">姓名</label><input class="form-input" value="Yuki Chen"></div>
+    <div class="form-group"><label class="form-label">現居地</label><input class="form-input" value="London, UK"></div>
+    <div class="form-group"><label class="form-label">來自國家</label><input class="form-input" value="Japan"></div>
+    <div class="form-group"><label class="form-label">LINE ID</label><input class="form-input" value="@yuki_london"></div>
+    <div style="display:flex;gap:7px;margin-top:3px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-edit-profile')">取消</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="closeModal('modal-edit-profile')">儲存</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-filter">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+      <div class="modal-title" style="margin:0;">篩選活動類型</div>
+      <span style="font-size:0.73rem;color:var(--yellow-dark);cursor:pointer;" onclick="clearFilter()">清除全部</span>
+    </div>
+    <p style="font-size:0.73rem;color:var(--text-light);margin-bottom:11px;">可多選，套用後僅顯示選取類型的活動</p>
+    <div class="filter-chips" id="filter-chips">
+      <div class="chip" onclick="toggleChip(this)" data-type="咖啡／聊天">咖啡／聊天</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="語言交換">語言交換</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="攝影">攝影</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="戶外健行">戶外健行</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="美食探店">美食探店</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="運動">運動</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="觀光">觀光</div>
+      <div class="chip" onclick="toggleChip(this)" data-type="桌遊">桌遊</div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:15px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-filter')">取消</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="applyFilter()">套用篩選</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCREEN_LABELS = { explore:'探索活動', create:'創建活動', detail:'活動詳情', review:'報名審核', myact:'我的活動', survey:'活動後問卷（參與）', survey2:'活動後問卷（主辦）', match:'配對列表', chat:'即時聊天', notif:'通知中心', profile:'個人檔案' };
+const NODE_MAP = { explore:'fn-explore', create:'fn-create', detail:'fn-detail', review:'fn-review', myact:'fn-myact', survey:'fn-survey', survey2:'fn-survey2', match:'fn-match', chat:'fn-chat', notif:'fn-notif', profile:'fn-profile' };
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) { el.classList.add('active'); const sb = el.querySelector('.screen-body,.messages'); if(sb) sb.scrollTop=0; }
+  document.getElementById('screen-label').textContent = SCREEN_LABELS[id] || id;
+  document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+  if (NODE_MAP[id]) { const fn = document.getElementById(NODE_MAP[id]); if(fn) fn.classList.add('active'); }
+}
+function toggleMode() {
+  const btn = document.getElementById('search-mode-btn'); const inp = document.getElementById('search-inp');
+  if (btn.textContent === '活動名稱') { btn.textContent='活動地點'; inp.placeholder='搜尋活動地點… (Autocomplete)'; }
+  else { btn.textContent='活動名稱'; inp.placeholder='搜尋活動名稱…'; }
+}
+function setTab(el) { el.parentElement.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active')); el.classList.add('active'); }
+function switchMyTab(el,type) {
+  el.parentElement.querySelectorAll('.my-act-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+  document.getElementById('host-tab').style.display=type==='host'?'block':'none';
+  document.getElementById('joined-tab').style.display=type==='joined'?'block':'none';
+}
+function setStatus(type) {
+  const bar = document.getElementById('detail-bottom');
+  const cfgs = {
+    reg:    {cls:'transparent', html:'<button class="btn btn-primary" style="margin:0;" onclick="openModal(\'modal-reg\')">報名活動</button>'},
+    rev:    {cls:'transparent', html:'<span class="status-fixed-text" style="color:var(--green);">主辦審核中</span>'},
+    ok:     {cls:'green', html:'<span class="status-fixed-text" style="color:#fff;">報名成功</span>'},
+    cancel: {cls:'gray', html:'<span class="status-fixed-text" style="color:var(--gray);">活動已取消</span>'},
+    confirm:{cls:'green', html:'<span class="status-fixed-text" style="color:#fff;">報名成功</span>'},
+    host:   {cls:'transparent', html:'<button class="btn btn-green" style="margin:0;" onclick="go(\'review\')">管理報名</button>'},
+    full:   {cls:'gray', html:'<span class="status-fixed-text" style="color:var(--gray);">報名已額滿</span>'},
+  };
+  const c=cfgs[type]; bar.className='status-fixed '+c.cls; bar.innerHTML=c.html;
+}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function confirmReg() { closeModal('modal-reg'); setStatus('rev'); }
+function confirmCancel() { const r=document.getElementById('cancel-reason').value.trim(); if(!r){alert('請填寫取消原因');return;} closeModal('modal-cancel'); go('myact'); }
+function approveRow(id) { const row=document.getElementById('row-'+id); row.querySelectorAll('button').forEach(b=>b.remove()); const t=document.createElement('span'); t.className='badge-status approved'; t.textContent='已批准'; row.appendChild(t); }
+function rejectRow(id) { const row=document.getElementById('row-'+id); row.querySelectorAll('button').forEach(b=>b.remove()); row.style.opacity='0.45'; const t=document.createElement('span'); t.style.cssText='font-size:0.7rem;color:var(--red);'; t.textContent='已拒絕'; row.appendChild(t); }
+function setStar(n) { document.querySelectorAll('#star-row .star').forEach((s,i)=>s.classList.toggle('filled',i<n)); }
+function pickAtt(btn,type) { btn.closest('.attendance-toggle').querySelectorAll('.att-btn').forEach(b=>b.className='att-btn'); btn.classList.add(type==='attend'?'selected-attend':'selected-absent'); }
+function sendMsg() {
+  const inp=document.getElementById('chat-inp'); const text=inp.value.trim(); if(!text) return;
+  const msgs=document.getElementById('chat-msgs'); const now=new Date(); const time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const div=document.createElement('div'); div.className='msg me'; div.innerHTML=`<div class="msg-bubble">${text}</div><div class="msg-time">${time}</div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; inp.value='';
+}
+let selectedFilters=new Set();
+function toggleChip(el){ el.classList.toggle('selected'); }
+function clearFilter(){ document.querySelectorAll('#filter-chips .chip').forEach(c=>c.classList.remove('selected')); }
+function applyFilter(){
+  selectedFilters=new Set(); document.querySelectorAll('#filter-chips .chip.selected').forEach(c=>selectedFilters.add(c.dataset.type));
+  closeModal('modal-filter'); renderExploreList(); updateFilterBtn();
+}
+function renderExploreList(){
+  let any=false;
+  document.querySelectorAll('#explore-list .act-card').forEach(card=>{
+    const type=card.dataset.type||''; const show=selectedFilters.size===0||selectedFilters.has(type);
+    card.style.display=show?'block':'none'; if(show) any=true;
+  });
+  document.getElementById('explore-list').style.display=any?'block':'none';
+  document.getElementById('explore-empty').style.display=any?'none':'block';
+}
+function updateFilterBtn(){
+  const btn=document.getElementById('filter-toggle-btn');
+  if(selectedFilters.size>0){btn.classList.add('active');btn.textContent='篩選（'+selectedFilters.size+'）';}
+  else{btn.classList.remove('active');btn.textContent='篩選';}
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}); });
+document.getElementById('fn-explore').classList.add('active');
+</script>
+</body>
+</html>
